@@ -59,6 +59,28 @@ python -m venv .venv
 
 ## 2. Install dependencies
 
+The project requires the following packages:
+
+#### Core
+
+| Package | Version | Purpose |
+|---|---|---|
+| `Flask` | 3.1.0 | Web framework |
+| `Flask-SQLAlchemy` | 3.1.1 | ORM integration |
+| `Flask-Migrate` | 4.0.7 | Database migrations (Alembic) |
+| `psycopg2-binary` | 2.9.10 | PostgreSQL adapter |
+| `python-dotenv` | 1.0.1 | Load `.env` variables |
+
+#### Authentication
+
+| Package | Version | Purpose |
+|---|---|---|
+| `Flask-Login` | 0.6.2 | Session-based user login |
+| `Flask-Security` | 5.1.0 | Role & security management |
+| `Flask-JWT-Extended` | 4.4.4 | JWT token authentication |
+
+Install all packages at once:
+
 ```bash
 pip install -r requirements.txt
 ```
