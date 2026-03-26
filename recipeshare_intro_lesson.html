@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RecipeShare with Flask + PostgreSQL</title>
+  <style>
+    :root {
+      --bg: #f7f8fc;
+      --surface: #ffffff;
+      --surface-2: #f0f4ff;
+      --ink: #1d2433;
+      --muted: #5c667a;
+      --primary: #3659d9;
+      --primary-2: #8fb1ff;
+      --accent: #ff8b5e;
+      --accent-2: #ffd7c8;
+      --success: #1d9b6c;
+      --border: #dce3f0;
+      --shadow: 0 14px 40px rgba(32, 56, 117, 0.12);
+      --radius: 20px;
+      --code-bg: #101624;
+      --code-ink: #eff3ff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(143,177,255,0.28), transparent 20%),
+        radial-gradient(circle at left 20%, rgba(255,139,94,0.16), transparent 18%),
+        var(--bg);
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 22px 60px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      gap: 28px;
+      align-items: center;
+      padding: 26px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, #ffffff 0%, #eef3ff 100%);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(220, 227, 240, 0.95);
+      overflow: hidden;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(54, 89, 217, 0.1);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 3.7vw, 3.3rem);
+      line-height: 1.06;
+      margin: 0 0 14px;
+    }
+
+    .lead {
+      font-size: 1.08rem;
+      color: var(--muted);
+      margin: 0 0 18px;
+      max-width: 62ch;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: white;
+      border: 1px solid var(--border);
+      font-weight: 600;
+      color: #32405d;
+      box-shadow: 0 6px 18px rgba(31, 48, 96, 0.06);
+    }
+
+    .hero-visual {
+      background: linear-gradient(180deg, #f7faff 0%, #ffffff 100%);
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      padding: 16px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .section {
+      margin-top: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 26px;
+    }
+
+    .section h2 {
+      font-size: 1.7rem;
+      margin: 0 0 12px;
+    }
+
+    .section h3 {
+      font-size: 1.18rem;
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    .section p { margin: 0 0 12px; }
+
+    .muted { color: var(--muted); }
+
+    .grid-2,
+    .grid-3 {
+      display: grid;
+      gap: 18px;
+      margin-top: 16px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .card {
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .icon-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(54,89,217,0.12), rgba(255,139,94,0.14));
+      margin-bottom: 12px;
+    }
+
+    ul.clean {
+      padding-left: 20px;
+      margin: 10px 0 0;
+    }
+
+    ul.clean li { margin-bottom: 8px; }
+
+    .compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 18px;
+      margin-top: 16px;
+    }
+
+    .compare .box {
+      border-radius: 18px;
+      padding: 18px;
+      border: 1px solid var(--border);
+    }
+
+    .spring { background: linear-gradient(180deg, #eff8f1, #ffffff); }
+    .flask { background: linear-gradient(180deg, #eef3ff, #ffffff); }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+      align-items: stretch;
+    }
+
+    .step {
+      background: linear-gradient(180deg, #ffffff, #f9fbff);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      text-align: center;
+      position: relative;
+    }
+
+    .step .num {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--primary);
+      color: white;
+      font-weight: 800;
+      margin: 0 auto 10px;
+    }
+
+    .endpoint {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #edf3ff;
+      color: #2142b8;
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      margin: 3px 6px 3px 0;
+      border: 1px solid #cdddff;
+    }
+
+    .code {
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border-radius: 18px;
+      padding: 18px;
+      overflow-x: auto;
+      border: 1px solid #1d2842;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.94rem;
+      line-height: 1.55;
+      margin-top: 12px;
+      white-space: pre-wrap;
+    }
+
+    .highlight {
+      background: linear-gradient(90deg, rgba(255,139,94,0.14), rgba(255,139,94,0));
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+
+    th, td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f5f8ff;
+      color: #30415f;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .footer-note {
+      margin-top: 22px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fff7f2, #ffffff);
+      border: 1px solid #ffd6c4;
+    }
+
+    .svg-fit {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .grid-3,
+      .grid-2,
+      .compare,
+      .flow {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Lesson Introduction</div>
+        <h1>RecipeShare with Flask, PostgreSQL, and a Real API</h1>
+        <p class="lead">
+          Today we are starting the backend foundation for <strong>RecipeShare</strong>, a web application where users can store, view, and later manage recipes through a clean API. You already know Flask configuration, blueprints, and general project structure, so this lesson moves into the part that makes an application feel real: <strong>persistent data</strong>. We are taking the same broad idea you saw in Spring Boot and rebuilding it in a different stack so you can compare concepts instead of memorizing framework-specific syntax.
+        </p>
+        <div class="pill-row">
+          <div class="pill">Flask App Factory</div>
+          <div class="pill">PostgreSQL Database</div>
+          <div class="pill">SQLAlchemy Models</div>
+          <div class="pill">JSON API Routes</div>
+          <div class="pill">React Front End Later</div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <svg class="svg-fit" viewBox="0 0 620 430" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of Flask API, PostgreSQL database, and RecipeShare cards">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#3659d9"/>
+              <stop offset="100%" stop-color="#8fb1ff"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ff8b5e"/>
+              <stop offset="100%" stop-color="#ffd0bf"/>
+            </linearGradient>
+          </defs>
+          <rect x="18" y="22" width="300" height="386" rx="26" fill="#ffffff" stroke="#dce3f0"/>
+          <rect x="338" y="46" width="262" height="132" rx="24" fill="#f6f9ff" stroke="#dce3f0"/>
+          <rect x="338" y="196" width="262" height="188" rx="24" fill="#fff9f6" stroke="#f0d6ca"/>
+
+          <rect x="46" y="54" width="244" height="26" rx="13" fill="#eef3ff"/>
+          <rect x="46" y="92" width="176" height="18" rx="9" fill="#d8e4ff"/>
+          <rect x="46" y="132" width="224" height="110" rx="20" fill="url(#g2)" opacity="0.16"/>
+          <circle cx="104" cy="188" r="40" fill="#ffffff" opacity="0.95"/>
+          <path d="M88 187c13-18 30-26 52-18-3 20-18 34-40 39-11 2-19-6-12-21z" fill="#ff8b5e"/>
+          <path d="M134 174c-10-8-22-11-36-9 3-8 9-14 18-16 10-3 21 1 28 9-1 7-4 12-10 16z" fill="#67bb7e"/>
+          <rect x="46" y="264" width="244" height="22" rx="11" fill="#edf2fb"/>
+          <rect x="46" y="298" width="210" height="16" rx="8" fill="#edf2fb"/>
+          <rect x="46" y="326" width="180" height="16" rx="8" fill="#edf2fb"/>
+          <rect x="46" y="356" width="120" height="28" rx="14" fill="url(#g1)"/>
+
+          <text x="362" y="84" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#30415f">API Endpoints</text>
+          <rect x="362" y="100" width="210" height="24" rx="10" fill="#edf3ff"/>
+          <text x="374" y="117" font-family="monospace" font-size="13" fill="#2745b3">GET /api/recipes</text>
+          <rect x="362" y="130" width="230" height="24" rx="10" fill="#edf3ff"/>
+          <text x="374" y="147" font-family="monospace" font-size="13" fill="#2745b3">GET /api/recipes/&lt;id&gt;</text>
+
+          <text x="362" y="234" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#73432f">PostgreSQL</text>
+          <ellipse cx="468" cy="302" rx="70" ry="22" fill="#ffb79a"/>
+          <rect x="398" y="254" width="140" height="48" fill="#ff8b5e"/>
+          <ellipse cx="468" cy="254" rx="70" ry="22" fill="#ffd3c1"/>
+          <ellipse cx="468" cy="302" rx="70" ry="22" fill="#ff8b5e"/>
+          <ellipse cx="468" cy="350" rx="70" ry="22" fill="#ffd3c1"/>
+          <rect x="398" y="302" width="140" height="48" fill="#ff8b5e"/>
+          <text x="426" y="308" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#ffffff">recipes</text>
+          <text x="433" y="356" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#6f3f2d">users</text>
+          <path d="M300 210 C338 210, 338 110, 362 110" stroke="#6b89ff" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M300 240 C344 240, 338 288, 398 288" stroke="#ff8b5e" stroke-width="5" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Why PostgreSQL?</h2>
+      <p>
+        PostgreSQL is a powerful relational database that is widely used in professional web applications because it is reliable, fast, and designed for real multi-user systems. While SQLite is excellent for quick demos and very small projects, PostgreSQL gives us a more realistic environment for the kind of applications we would actually deploy. It supports strong relational modeling, solid data integrity rules, indexing, and concurrent access by many users. It also works especially well with Flask when paired with SQLAlchemy, because our Python models can map cleanly to database tables. Using PostgreSQL now helps you practice the same workflow used in many production applications: configure the database connection, define models, create migrations, and query real persisted data. In other words, this lesson is where our Flask app stops being a toy and starts behaving like an actual backend system.
+      </p>
+      <div class="grid-3">
+        <div class="card">
+          <div class="icon-badge">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 4v10l-7 4-7-4V7l7-4z" stroke="#3659d9" stroke-width="1.8"/><path d="M12 7l4 2.3v5.4L12 17l-4-2.3V9.3L12 7z" fill="#8fb1ff" opacity=".65"/></svg>
+          </div>
+          <h3>Structured Data</h3>
+          <p class="muted">Recipes, users, and later favorites or categories fit naturally into related tables.</p>
+        </div>
+        <div class="card">
+          <div class="icon-badge">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 6h14M5 12h14M5 18h8" stroke="#3659d9" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="18" r="3" fill="#ff8b5e"/></svg>
+          </div>
+          <h3>Production Mindset</h3>
+          <p class="muted">You practice the same kind of setup used in many deployed APIs rather than a one-file demo.</p>
+        </div>
+        <div class="card">
+          <div class="icon-badge">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17V7m5 10V4m5 13v-7" stroke="#3659d9" stroke-width="2" stroke-linecap="round"/><path d="M4 20h16" stroke="#ff8b5e" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <h3>Growth Later</h3>
+          <p class="muted">The same database can support authentication, search, filtering, favorites, and a React front end.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>What is RecipeShare?</h2>
+      <p>
+        <strong>RecipeShare</strong> is a simple but realistic web application where users can browse, create, and later manage recipe entries. In this first backend phase, we are not focusing on polished user accounts or a fancy front end yet. Instead, we are building the backbone of the application: the database, the models, and the API routes that expose recipe data in JSON form. This is an ideal teaching app because it gives us clear entities, meaningful relationships, and room to grow over the next few lessons.
+      </p>
+      <div class="compare">
+        <div class="box spring">
+          <h3>What you already saw in Spring Boot</h3>
+          <ul class="clean">
+            <li>an application with domain models</li>
+            <li>routes/controllers returning data</li>
+            <li>database-backed persistence</li>
+            <li>the idea of an API that powers a front end</li>
+          </ul>
+        </div>
+        <div class="box flask">
+          <h3>What you will see now in Flask</h3>
+          <ul class="clean">
+            <li>a lighter framework with more explicit setup</li>
+            <li>SQLAlchemy models instead of JPA entities</li>
+            <li>Flask routes and blueprints instead of Spring controllers</li>
+            <li>the same core backend ideas in a different stack</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>The core data model</h2>
+      <p>
+        We are keeping the first version intentionally small. That helps us focus on the workflow of building the backend instead of drowning in too many tables. For now, we only need two models: <span class="highlight">User</span> and <span class="highlight">Recipe</span>. A user can have many recipes, and each recipe belongs to exactly one user.
+      </p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>User</h3>
+          <ul class="clean">
+            <li><strong>id</strong> — primary key</li>
+            <li><strong>username</strong> — unique display name</li>
+            <li><strong>email</strong> — unique email address</li>
+          </ul>
+          <p class="muted">In the next lesson, this model will also gain password-related fields for authentication.</p>
+        </div>
+        <div class="card">
+          <h3>Recipe</h3>
+          <ul class="clean">
+            <li><strong>id</strong> — primary key</li>
+            <li><strong>title</strong> — recipe title</li>
+            <li><strong>description</strong> — short summary</li>
+            <li><strong>instructions</strong> — preparation steps</li>
+            <li><strong>prep_time</strong> — number of minutes</li>
+            <li><strong>created_at</strong> — creation timestamp</li>
+            <li><strong>user_id</strong> — foreign key to the author</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Relationship</th>
+              <th>Meaning in plain language</th>
+              <th>Why it matters</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>One user → many recipes</td>
+              <td>One person can create multiple recipe entries.</td>
+              <td>This mirrors real application ownership and prepares us for auth.</td>
+            </tr>
+            <tr>
+              <td>Each recipe → one user</td>
+              <td>Every recipe has a single author in the database.</td>
+              <td>This gives us a clean foreign key and a natural query pattern.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>How the application will work today</h2>
+      <p>
+        The application flow in this lesson is deliberately simple. We define our models in Python, connect Flask to PostgreSQL, create database tables through migrations, add a few seed records, and then expose recipe data through JSON endpoints. Even though the front end is not built yet, this is already a complete backend workflow. Later, React will call these exact routes.
+      </p>
+      <div class="flow">
+        <div class="step">
+          <div class="num">1</div>
+          <strong>Configure</strong>
+          <p class="muted">Connect Flask to PostgreSQL with environment variables.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <strong>Model</strong>
+          <p class="muted">Create <code>User</code> and <code>Recipe</code> with SQLAlchemy.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <strong>Migrate</strong>
+          <p class="muted">Generate and apply schema changes to the database.</p>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <strong>Seed</strong>
+          <p class="muted">Insert sample users and recipes for testing.</p>
+        </div>
+        <div class="step">
+          <div class="num">5</div>
+          <strong>Serve JSON</strong>
+          <p class="muted">Return recipe data through API endpoints.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>First endpoints</h2>
+      <p>
+        Because we are preparing for a React front end, our first routes should return JSON instead of rendered HTML pages. That makes the backend reusable and keeps responsibilities separate: Flask provides data and business logic, while React will later provide the user interface.
+      </p>
+      <p>
+        We will start with endpoints like these:
+      </p>
+      <div>
+        <span class="endpoint">GET /api/recipes</span>
+        <span class="endpoint">GET /api/recipes/&lt;id&gt;</span>
+        <span class="endpoint">POST /api/recipes</span>
+      </div>
+      <div class="code">[
+  {
+    "id": 1,
+    "title": "Pasta Primavera",
+    "description": "A fresh vegetable pasta dish.",
+    "prep_time": 25,
+    "user_id": 1
+  },
+  {
+    "id": 2,
+    "title": "Chocolate Cake",
+    "description": "A rich and moist chocolate cake.",
+    "prep_time": 60,
+    "user_id": 2
+  }
+]</div>
+    </section>
+
+    <section class="section">
+      <h2>Where migrations fit in</h2>
+      <p>
+        A very common beginner mistake is to assume that changing a model class automatically changes the database. It does not. The model describes what the schema <em>should</em> look like, but migrations are the mechanism that records and applies those schema changes. That means our workflow becomes: change the model, generate a migration, and upgrade the database. This is how teams safely evolve database-backed applications over time.
+      </p>
+      <div class="code">flask db init
+flask db migrate -m "Create user and recipe tables"
+flask db upgrade</div>
+      <div class="footer-note">
+        <strong>Key idea:</strong> the Python code and the database schema are related, but they are not the same thing. Migrations are the bridge between them.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Setting up a Run/Debug Configuration in IntelliJ</h2>
+      <p>
+        To make development smoother, create a dedicated <strong>Run/Debug configuration</strong> for the Flask app in IntelliJ.
+        This lets you start the server with one click, reuse the same environment variables every time, and place breakpoints
+        in your routes and model code for debugging. Since our application is started through <code>run.py</code>, IntelliJ
+        only needs to know which interpreter to use, which file exposes the Flask app, and which environment variables should
+        be available when the server starts.
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Recommended values</h3>
+          <ul class="clean">
+            <li><strong>Name:</strong> <code>RecipeShare Flask</code></li>
+            <li><strong>Interpreter:</strong> your project virtual environment</li>
+            <li><strong>Target / Script / FLASK_APP:</strong> <code>run.py</code></li>
+            <li><strong>Working directory:</strong> project root folder</li>
+            <li><strong>Host:</strong> <code>127.0.0.1</code></li>
+            <li><strong>Port:</strong> <code>5000</code></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Environment variables</h3>
+          <p class="muted">A typical local setup might include:</p>
+          <div class="code">FLASK_APP=run.py
+FLASK_DEBUG=1
+DATABASE_URL=postgresql://localuser@localhost/recipeshare </div>
+          <p class="muted">
+            If your project loads values from <code>.env</code>, IntelliJ can still use them as long as your app reads that file when starting.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="step">
+          <div class="num">1</div>
+          <strong>Open</strong>
+          <p class="muted">Go to Run → Edit Configurations.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <strong>Create</strong>
+          <p class="muted">Add a Flask Server configuration, or a Python config that runs <code>flask</code>.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <strong>Point</strong>
+          <p class="muted">Set the target app to <code>run.py</code> and the working directory to the repo root.</p>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <strong>Supply</strong>
+          <p class="muted">Add <code>FLASK_APP</code>, <code>FLASK_DEBUG</code>, and <code>DATABASE_URL</code>.</p>
+        </div>
+        <div class="step">
+          <div class="num">5</div>
+          <strong>Run / Debug</strong>
+          <p class="muted">Start the server or step through your code with breakpoints.</p>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <strong>Why this matters:</strong> a Run/Debug configuration turns your Flask project into something you can launch and inspect quickly,
+        which is especially useful once routes, models, and database logic start interacting.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Setting up a Database View in IntelliJ</h2>
+      <p>
+        IntelliJ’s <strong>Database</strong> tool window gives you a live view of your PostgreSQL database. This is extremely useful in a lesson like this
+        because students can connect the abstract ideas of models and migrations to something concrete: real tables, real rows, and real queries.
+        After creating the connection, you can browse schemas, inspect table structures, run SQL manually, and verify that your Flask application
+        is actually saving data where you expect it to.
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Connection values for this project</h3>
+          <ul class="clean">
+            <li><strong>Data Source:</strong> PostgreSQL</li>
+            <li><strong>Host:</strong> <code>127.0.0.1</code> or <code>localhost</code></li>
+            <li><strong>Port:</strong> <code>5432</code></li>
+            <li><strong>Database:</strong> <code>recipeshare</code></li>
+            <li><strong>User:</strong> <code>localuser</code> (or your local PostgreSQL user)</li>
+            <li><strong>Password:</strong> use your PostgreSQL password if required</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>What students should look for</h3>
+          <ul class="clean">
+            <li>the <code>users</code> table created by the migration</li>
+            <li>the <code>recipes</code> table and its columns</li>
+            <li>the foreign key from <code>recipes.user_id</code> to <code>users.id</code></li>
+            <li>seeded rows after running <code>seed.py</code></li>
+            <li>changes after inserting data through the API</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="step">
+          <div class="num">1</div>
+          <strong>Open</strong>
+          <p class="muted">View → Tool Windows → Database.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <strong>Add Source</strong>
+          <p class="muted">Click the + icon and choose PostgreSQL.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <strong>Enter Details</strong>
+          <p class="muted">Fill in host, port, database, username, and password.</p>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <strong>Test</strong>
+          <p class="muted">Use Test Connection to confirm the datasource works.</p>
+        </div>
+        <div class="step">
+          <div class="num">5</div>
+          <strong>Browse</strong>
+          <p class="muted">Expand schemas and tables to inspect your live database.</p>
+        </div>
+      </div>
+
+      <div class="code">SELECT r.title, u.username
+FROM recipes r
+JOIN users u ON r.user_id = u.id;</div>
+
+      <p>
+        Once the database view is connected, you can use it not only to inspect tables but also to run ad hoc queries like the one above.
+        That makes it a powerful teaching bridge between raw SQL knowledge from your database course and the higher-level model code you are writing in Flask.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>What comes next</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Next lesson: authentication</h3>
+          <p class="muted">We will add registration, login, password hashing, and protected routes so recipes can belong to real logged-in users.</p>
+        </div>
+        <div class="card">
+          <h3>After that: React front end</h3>
+          <p class="muted">React will consume the Flask API to display recipes, forms, and user interactions in the browser.</p>
+        </div>
+        <div class="card">
+          <h3>Future enhancements</h3>
+          <p class="muted">Categories, favorites, search, filtering, image URLs, and richer validation can all grow from this base.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>What you should understand by the end of this lesson</h2>
+      <ul class="clean">
+        <li>why PostgreSQL is a strong choice for a real backend application</li>
+        <li>how Flask, SQLAlchemy, and PostgreSQL work together</li>
+        <li>how a model becomes a table through migrations</li>
+        <li>why an API-first design is useful when a React front end is coming later</li>
+        <li>how the same application idea can be implemented in different frameworks while keeping the same core architecture</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>

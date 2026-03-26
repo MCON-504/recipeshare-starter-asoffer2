@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction to PostgreSQL for Flask Developers</title>
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --ink:#1f2937;
+      --muted:#5b6472;
+      --brand:#1d4ed8;
+      --brand2:#0f766e;
+      --accent:#eef4ff;
+      --border:#dbe4f0;
+      --shadow:0 10px 30px rgba(31,41,55,.08);
+      --code:#0f172a;
+      --codebg:#f8fafc;
+      --gold:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color:var(--ink);
+      background:linear-gradient(180deg,#eef4ff 0%, #f8fbff 180px, var(--bg) 181px);
+      line-height:1.65;
+    }
+    .container{
+      width:min(1120px, 92%);
+      margin:0 auto;
+    }
+    header.hero{
+      padding:42px 0 28px;
+    }
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:28px;
+      align-items:center;
+    }
+    .hero-card, .panel{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+    }
+    .hero-card{
+      padding:34px;
+    }
+    .eyebrow{
+      display:inline-block;
+      padding:6px 12px;
+      border-radius:999px;
+      background:var(--accent);
+      color:var(--brand);
+      font-weight:700;
+      font-size:.9rem;
+      letter-spacing:.02em;
+      margin-bottom:14px;
+    }
+    h1,h2,h3{
+      line-height:1.15;
+      margin:0 0 14px;
+    }
+    h1{font-size:2.35rem}
+    h2{font-size:1.7rem; margin-bottom:10px}
+    h3{font-size:1.2rem}
+    p{margin:0 0 14px}
+    .lede{
+      font-size:1.08rem;
+      color:var(--muted);
+    }
+    .hero-visual{
+      padding:18px;
+      min-height:320px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .section{
+      margin:26px 0;
+    }
+    .panel{
+      padding:26px;
+      margin:22px 0;
+    }
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:22px;
+    }
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+    .callout{
+      border-left:5px solid var(--brand);
+      background:#f8fbff;
+      padding:16px 18px;
+      border-radius:14px;
+      margin:16px 0;
+    }
+    .mini{
+      color:var(--muted);
+      font-size:.95rem;
+    }
+    ul{
+      margin:10px 0 14px 22px;
+      padding:0;
+    }
+    li{margin:6px 0}
+    code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:.95em;
+      background:#eef2ff;
+      padding:2px 6px;
+      border-radius:6px;
+    }
+    pre{
+      margin:14px 0 18px;
+      background:var(--codebg);
+      color:var(--code);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px 18px;
+      overflow:auto;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+    }
+    pre code{
+      background:transparent;
+      padding:0;
+      border-radius:0;
+      font-size:.95rem;
+    }
+    .step{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      margin:14px 0;
+    }
+    .num{
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      background:linear-gradient(135deg,var(--brand),#60a5fa);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      flex:0 0 34px;
+      margin-top:2px;
+      box-shadow:0 8px 18px rgba(29,78,216,.22);
+    }
+    .diagram{
+      width:100%;
+      margin:14px 0;
+      background:linear-gradient(180deg,#f9fbff,#f3f8ff);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:12px;
+    }
+    .compare{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-top:12px;
+    }
+    .compare > div{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+      background:#fbfdff;
+    }
+    .tag{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:.8rem;
+      font-weight:700;
+      margin-bottom:8px;
+      background:#ecfeff;
+      color:var(--brand2);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin:12px 0 18px;
+      background:#fff;
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid var(--border);
+    }
+    th,td{
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+      vertical-align:top;
+    }
+    th{
+      background:#f8fbff;
+      font-weight:700;
+    }
+    tr:last-child td{border-bottom:none}
+    .footer-note{
+      text-align:center;
+      color:var(--muted);
+      padding:10px 0 40px;
+      font-size:.95rem;
+    }
+    @media (max-width: 900px){
+      .hero-grid,.grid-2,.grid-3,.compare{
+        grid-template-columns:1fr;
+      }
+      h1{font-size:2rem}
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container hero-grid">
+      <div class="hero-card">
+        <div class="eyebrow">Lesson Introduction</div>
+        <h1>Introduction to PostgreSQL</h1>
+        <p class="lede">
+          In this lesson, we move from application setup into the database layer and start working with
+          <strong>PostgreSQL</strong>, one of the most widely used relational database systems in real-world web development.
+          You already know SQL from SQL Server, so the big picture should feel familiar: tables hold data, rows represent records,
+          columns define attributes, and SQL is still the language used to query and change information.
+          What changes is mostly the platform and tooling, not the core relational ideas.
+          PostgreSQL is especially popular in Flask, Django, and other modern backend stacks because it is reliable, powerful,
+          standards-friendly, and well suited for both small projects and production systems.
+          As we build RecipeShare, PostgreSQL will become the persistent storage behind our Flask API.
+        </p>
+        <div class="callout">
+          <strong>Mindset for today:</strong> you are not learning SQL from zero. You are learning how the SQL knowledge you already have
+          transfers into a Python web application.
+        </div>
+      </div>
+      <div class="panel hero-visual">
+        <svg viewBox="0 0 460 330" width="100%" height="100%" aria-label="PostgreSQL illustration">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2563eb"/>
+              <stop offset="100%" stop-color="#0f766e"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#dbeafe"/>
+            </linearGradient>
+          </defs>
+          <rect x="24" y="24" width="412" height="282" rx="26" fill="url(#g2)" stroke="#cbd5e1"/>
+          <ellipse cx="118" cy="106" rx="76" ry="22" fill="#93c5fd"/>
+          <rect x="42" y="106" width="152" height="104" fill="#93c5fd"/>
+          <ellipse cx="118" cy="210" rx="76" ry="22" fill="#60a5fa"/>
+          <ellipse cx="118" cy="106" rx="76" ry="22" fill="#bfdbfe"/>
+          <rect x="240" y="62" width="150" height="42" rx="12" fill="#fff" stroke="#cbd5e1"/>
+          <text x="257" y="88" font-size="18" font-family="Arial, sans-serif" fill="#0f172a">Flask App</text>
+          <rect x="240" y="138" width="150" height="42" rx="12" fill="#fff" stroke="#cbd5e1"/>
+          <text x="255" y="164" font-size="18" font-family="Arial, sans-serif" fill="#0f172a">SQLAlchemy</text>
+          <rect x="240" y="214" width="150" height="42" rx="12" fill="#fff" stroke="#cbd5e1"/>
+          <text x="257" y="240" font-size="18" font-family="Arial, sans-serif" fill="#0f172a">PostgreSQL</text>
+          <path d="M194 86 L238 86" stroke="url(#g1)" stroke-width="6" stroke-linecap="round"/>
+          <path d="M194 160 L238 160" stroke="url(#g1)" stroke-width="6" stroke-linecap="round"/>
+          <path d="M315 104 L315 138" stroke="url(#g1)" stroke-width="6" stroke-linecap="round"/>
+          <path d="M315 180 L315 214" stroke="url(#g1)" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="315" cy="121" r="6" fill="#1d4ed8"/>
+          <circle cx="315" cy="197" r="6" fill="#0f766e"/>
+          <text x="70" y="112" font-size="22" font-family="Arial, sans-serif" fill="#0f172a" font-weight="700">DB</text>
+          <text x="56" y="138" font-size="12" font-family="Arial, sans-serif" fill="#334155">tables</text>
+          <text x="56" y="154" font-size="12" font-family="Arial, sans-serif" fill="#334155">rows</text>
+          <text x="56" y="170" font-size="12" font-family="Arial, sans-serif" fill="#334155">queries</text>
+          <text x="56" y="186" font-size="12" font-family="Arial, sans-serif" fill="#334155">constraints</text>
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section panel">
+      <h2>Why PostgreSQL?</h2>
+      <p>
+        PostgreSQL is an open-source relational database system that supports the same foundational ideas you used in SQL Server:
+        tables, keys, joins, constraints, queries, indexes, and transactions. For a Flask application, it is a strong choice because
+        it is stable, widely supported, and works well with Python tools such as SQLAlchemy and Flask-Migrate. It is also common in
+        deployed applications, so it gives you experience with a production-style database instead of only a lightweight classroom database.
+      </p>
+
+      <div class="compare">
+        <div>
+          <span class="tag">What feels familiar</span>
+          <ul>
+            <li><code>CREATE TABLE</code>, <code>INSERT</code>, <code>SELECT</code>, <code>UPDATE</code>, <code>DELETE</code></li>
+            <li>Primary keys, foreign keys, and constraints</li>
+            <li>One-to-many and many-to-many relationships</li>
+            <li>Normalization and relational thinking</li>
+          </ul>
+        </div>
+        <div>
+          <span class="tag">What is new in our stack</span>
+          <ul>
+            <li>Using PostgreSQL instead of SQL Server</li>
+            <li>Connecting through a Flask application</li>
+            <li>Using SQLAlchemy models as a bridge to the database</li>
+            <li>Managing schema changes with migrations</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section grid-3">
+      <div class="panel">
+        <h3>Table</h3>
+        <p>A table stores data about one kind of thing, such as users or recipes.</p>
+      </div>
+      <div class="panel">
+        <h3>Row</h3>
+        <p>A row is one record in that table, such as one user or one recipe.</p>
+      </div>
+      <div class="panel">
+        <h3>Column</h3>
+        <p>A column defines one attribute of that record, such as title, email, or prep time.</p>
+      </div>
+    </section>
+    <section class="section panel">
+      <h2>Working with pgAdmin on Windows</h2>
+      <p>
+        On your Windows VMs you can use <strong>pgAdmin</strong> as a graphical tool for working with PostgreSQL.
+        pgAdmin lets you browse databases, inspect tables, view columns, run SQL, and verify that your schema matches what
+        your Flask application expects. This is especially helpful early on, because you can see the database visually
+        while you are also learning models and migrations in Python.
+      </p>
+
+      <div class="grid-2">
+        <div>
+          <h3>Typical connection values</h3>
+          <ul>
+            <li><strong>Host:</strong> <code>localhost</code></li>
+            <li><strong>Port:</strong> <code>5432</code></li>
+            <li><strong>Maintenance database:</strong> <code>postgres</code> or <code>recipeshare</code></li>
+            <li><strong>Username:</strong> your PostgreSQL username or <code>postgres</code></li>
+            <li><strong>Password:</strong> your PostgreSQL password or <code>postgres</code></li>
+          </ul>
+        </div>
+        <div>
+          <h3>What you should do in pgAdmin</h3>
+          <ul>
+            <li>connect to the local PostgreSQL server</li>
+            <li>expand <code>Databases</code> and open <code>recipeshare</code></li>
+            <li>inspect the <code>users</code> and <code>recipes</code> tables</li>
+            <li>right-click a table to view data or properties</li>
+            <li>open the Query Tool and run SQL manually</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">1</div>
+        <div>
+          <h3>Open pgAdmin</h3>
+          <p>Launch pgAdmin from the Windows Start menu and connect to your local PostgreSQL server.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">2</div>
+        <div>
+          <h3>Locate your database</h3>
+          <p>Expand <code>Servers → PostgreSQL → Databases</code> and select <code>recipeshare</code>.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">3</div>
+        <div>
+          <h3>Inspect tables</h3>
+          <p>Expand <code>Schemas → public → Tables</code> to see the tables created by your migration.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">4</div>
+        <div>
+          <h3>Run SQL</h3>
+          <p>Use the Query Tool to experiment with SQL such as selecting recipes or joining recipes to users.</p>
+          <pre><code>SELECT r.title, u.username
+FROM recipes r
+JOIN users u ON r.user_id = u.id;</code></pre>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>Teaching value:</strong> pgAdmin gives you an easy visual bridge from SQL concepts you already know to the live PostgreSQL database that supports their Flask application.
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>Working from psql on Windows VMs</h2>
+      <p>
+        You should also learn how to work from the command line using <strong>psql</strong>, the PostgreSQL interactive terminal.
+        This is useful when a GUI is unavailable, when you want to follow written instructions exactly, or when you need a quick way
+        to test SQL commands. On the Windows VMs, you may need to add the PostgreSQL runtime folder to the command prompt
+        <code>PATH</code> before <code>psql</code> can be launched directly.
+      </p>
+
+      <h3>Temporary PATH update in Command Prompt</h3>
+      <p>In a regular Windows Command Prompt, you can run:</p>
+      <pre><code>set PATH=%PATH%;C:\Program Files\PostgreSQL\17\pgAdmin 4\runtime</code></pre>
+
+      <p>After that, you can try:</p>
+      <pre><code>psql -U postgres
+psql -U postgres -d recipeshare</code></pre>
+
+      <div class="step">
+        <div class="num">1</div>
+        <div>
+          <h3>Open Command Prompt</h3>
+          <p>Start a normal Windows Command Prompt on the VM.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">2</div>
+        <div>
+          <h3>Update PATH</h3>
+          <p>Add the PostgreSQL runtime folder so the shell can find the <code>psql</code> executable.</p>
+          <pre><code>set PATH=%PATH%;C:\Program Files\PostgreSQL\17\pgAdmin 4\runtime</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">3</div>
+        <div>
+          <h3>Connect to PostgreSQL</h3>
+          <p>Log in with a PostgreSQL username and optionally specify the database name.</p>
+          <pre><code>psql -U postgres -d recipeshare</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">4</div>
+        <div>
+          <h3>Use basic psql commands</h3>
+          <pre><code>\l
+\c recipeshare
+\dt
+\d users
+\d recipes</code></pre>
+          <p class="mini">
+            These commands list databases, connect to a database, list tables, and describe table structures.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">5</div>
+        <div>
+          <h3>Run SQL directly</h3>
+          <pre><code>SELECT * FROM users;
+SELECT * FROM recipes;</code></pre>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>Important note:</strong> the <code>set PATH=...</code> command above updates the path only for the current Command Prompt window.
+        If you close that window, you may need to run the command again in a new session.
+      </div>
+    </section>
+    <section class="section panel">
+      <h2>Basic Database Operations</h2>
+      <p>
+        Even though our Flask app will often talk to PostgreSQL through SQLAlchemy, it is still important to understand the core SQL operations
+        underneath. The application layer does not replace the database; it sits on top of it. When we define a model, create a migration,
+        or save a new recipe, those actions eventually become SQL statements against the database.
+      </p>
+
+      <div class="step">
+        <div class="num">1</div>
+        <div>
+          <h3>Create a database</h3>
+          <p>Before we create tables, we need a database to hold them.</p>
+          <pre><code>CREATE DATABASE recipeshare;</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">2</div>
+        <div>
+          <h3>Create a table</h3>
+          <p>
+            A table definition describes the structure of the data: column names, data types, keys, and rules such as
+            <code>NOT NULL</code> or <code>UNIQUE</code>.
+          </p>
+          <pre><code>CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(80) NOT NULL UNIQUE,
+    email VARCHAR(120) NOT NULL UNIQUE
+);</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">3</div>
+        <div>
+          <h3>Create a related table</h3>
+          <p>
+            The <code>recipes</code> table connects each recipe to a user with a foreign key. This is the same relational idea
+            you already know from SQL Server.
+          </p>
+          <pre><code>CREATE TABLE recipes (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(150) NOT NULL,
+    description TEXT NOT NULL,
+    instructions TEXT NOT NULL,
+    prep_time INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    CONSTRAINT fk_recipes_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+);</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">4</div>
+        <div>
+          <h3>Insert rows</h3>
+          <pre><code>INSERT INTO users (username, email)
+VALUES ('alice', 'alice@example.com');
+
+INSERT INTO recipes (title, description, instructions, prep_time, user_id)
+VALUES (
+    'Pasta Primavera',
+    'Fresh pasta with vegetables',
+    'Boil pasta, saute vegetables, combine, and serve.',
+    25,
+    1
+);</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">5</div>
+        <div>
+          <h3>Read data</h3>
+          <pre><code>SELECT id, title, prep_time
+FROM recipes;
+
+SELECT r.title, u.username
+FROM recipes r
+JOIN users u ON r.user_id = u.id;</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="num">6</div>
+        <div>
+          <h3>Update and delete</h3>
+          <pre><code>UPDATE recipes
+SET prep_time = 30
+WHERE id = 1;
+
+DELETE FROM recipes
+WHERE id = 1;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>Illustration: How the Tables Connect</h2>
+      <div class="diagram">
+        <svg viewBox="0 0 950 300" width="100%" height="100%" aria-label="users and recipes tables relationship diagram">
+          <rect x="45" y="42" width="280" height="200" rx="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+          <rect x="45" y="42" width="280" height="46" rx="18" fill="#dbeafe"/>
+          <text x="65" y="72" font-size="24" font-family="Arial, sans-serif" fill="#1e3a8a" font-weight="700">users</text>
+          <text x="68" y="116" font-size="18" font-family="Arial, sans-serif" fill="#0f172a">id (PK)</text>
+          <text x="68" y="148" font-size="18" font-family="Arial, sans-serif" fill="#0f172a">username</text>
+          <text x="68" y="180" font-size="18" font-family="Arial, sans-serif" fill="#0f172a">email</text>
+
+          <rect x="620" y="42" width="280" height="220" rx="18" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+          <rect x="620" y="42" width="280" height="46" rx="18" fill="#ccfbf1"/>
+          <text x="640" y="72" font-size="24" font-family="Arial, sans-serif" fill="#115e59" font-weight="700">recipes</text>
+          <text x="643" y="116" font-size="18" font-family="Arial, sans-serif" fill="#0f172a">id (PK)</text>
+          <text x="643" y="148" font-size="18" font-family="Arial, sans-serif" fill="#0f172a">title</text>
+          <text x="643" y="180" font-size="18" font-family="Arial, sans-serif" fill="#0f172a">description</text>
+          <text x="643" y="212" font-size="18" font-family="Arial, sans-serif" fill="#0f172a">prep_time</text>
+          <text x="643" y="244" font-size="18" font-family="Arial, sans-serif" fill="#0f172a">user_id (FK)</text>
+
+          <path d="M325 140 C 430 140, 515 230, 620 230" fill="none" stroke="#2563eb" stroke-width="6" stroke-linecap="round"/>
+          <polygon points="610,220 620,230 608,238" fill="#2563eb"/>
+          <text x="384" y="118" font-size="22" font-family="Arial, sans-serif" fill="#1d4ed8" font-weight="700">one user</text>
+          <text x="395" y="148" font-size="20" font-family="Arial, sans-serif" fill="#475569">can have many recipes</text>
+        </svg>
+      </div>
+      <p class="mini">
+        This is a one-to-many relationship: one user can own many recipes, but each recipe belongs to one user.
+      </p>
+    </section>
+
+    <section class="section grid-2">
+      <div class="panel">
+        <h2>Common PostgreSQL Data Types</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Use in our app</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>INTEGER</code></td>
+              <td>Numeric values like prep time or IDs</td>
+            </tr>
+            <tr>
+              <td><code>SERIAL</code></td>
+              <td>Auto-incrementing integer primary key</td>
+            </tr>
+            <tr>
+              <td><code>VARCHAR(n)</code></td>
+              <td>Short text such as usernames or recipe titles</td>
+            </tr>
+            <tr>
+              <td><code>TEXT</code></td>
+              <td>Longer text such as descriptions and instructions</td>
+            </tr>
+            <tr>
+              <td><code>TIMESTAMP</code></td>
+              <td>Dates and times, such as when a recipe was created</td>
+            </tr>
+            <tr>
+              <td><code>BOOLEAN</code></td>
+              <td>True/false values later, for flags and settings</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <h2>Constraints You Should Remember</h2>
+        <ul>
+          <li><code>PRIMARY KEY</code> uniquely identifies a row</li>
+          <li><code>FOREIGN KEY</code> connects one table to another</li>
+          <li><code>NOT NULL</code> requires a value</li>
+          <li><code>UNIQUE</code> prevents duplicates, such as duplicate usernames</li>
+          <li><code>CHECK</code> can enforce rules, such as positive prep time</li>
+        </ul>
+        <pre><code>CREATE TABLE recipes (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(150) NOT NULL,
+    prep_time INTEGER CHECK (prep_time &gt;= 0)
+);</code></pre>
+      </div>
+    </section>
+
+    <section class="section panel">
+      <h2>How This Fits into Flask</h2>
+      <p>
+        In plain SQL, we create tables and query them directly. In a Flask application, we usually define Python classes that represent those tables.
+        SQLAlchemy then maps Python objects to relational tables. So a class like <code>User</code> becomes a <code>users</code> table, and a class like
+        <code>Recipe</code> becomes a <code>recipes</code> table. When we add a new object in Python and commit the session, SQLAlchemy generates the
+        corresponding SQL behind the scenes.
+      </p>
+      <pre><code>class User(db.Model):
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), nullable=False, unique=True)
+    email = db.Column(db.String(120), nullable=False, unique=True)</code></pre>
+
+      <p>
+        That does not mean SQL disappears. It means our application gets a higher-level, Python-friendly way to work with relational data.
+        The database still matters, and understanding the underlying SQL will make SQLAlchemy much easier to reason about.
+      </p>
+    </section>
+
+    <section class="section panel">
+      <h2>Migrations: Creating and Changing Tables Safely</h2>
+      <p>
+        In classroom demos, it is tempting to drop tables and recreate everything from scratch. In real applications, we want a safer process.
+        That is why we use <strong>migrations</strong>. A migration records how the database schema changes over time. If we add a new column, rename
+        a table, or create a new relationship, the migration system generates a versioned change that can be applied consistently.
+      </p>
+      <pre><code>flask db init
+flask db migrate -m "Create users and recipes tables"
+flask db upgrade</code></pre>
+      <div class="callout">
+        <strong>Key idea:</strong> changing your Python model class does not automatically change the database. A migration is the bridge between your updated code and the actual schema in PostgreSQL.
+      </div>
+    </section>
+
+    <div class="footer-note">
+      PostgreSQL + Flask + SQLAlchemy gives us a clean bridge from relational database theory to real web application development.
+    </div>
+  </main>
+</body>
+</html>
