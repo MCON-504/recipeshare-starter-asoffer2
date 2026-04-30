@@ -34,7 +34,7 @@ RecipeShare is a Flask starter app that supports both browser pages and JSON API
 
 - `GET|POST /auth/register` - dual-mode register route
 - `GET|POST /auth/login` - dual-mode login route
-- `POST /auth/logout` - dual-mode logout route
+- `POST /auth/logout` - logout route (currently returns JSON; becomes dual-mode after completing Exercise 2)
 
 ## Project Structure
 
