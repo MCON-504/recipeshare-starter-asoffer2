@@ -23,7 +23,9 @@ def get_recipes():
 @main_bp.route("/recipes/<int:recipe_id>", methods=["GET"])
 def get_recipe(recipe_id: int):
     recipe = Recipe.query.get_or_404(recipe_id)
-    return jsonify(recipe.to_dict())
+    if request.is_json:
+        return jsonify(recipe.to_dict())
+    return render_template("recipe_detail.html", recipe=recipe)
 
 
 @main_bp.route("/recipes", methods=["POST"])

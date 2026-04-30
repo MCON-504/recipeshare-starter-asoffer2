@@ -41,8 +41,9 @@ def register():
         user.password = form.password.data
         db.session.add(user)
         db.session.commit()
-        flash("Account created! Please log in.", "success")
-        return redirect(url_for("auth.login"))
+        login_user(user)
+        flash(f"Welcome, {user.username}! Your account has been created.", "success")
+        return redirect(url_for("main_bp.get_recipes"))
 
     return render_template("auth/register.html", form=form)
 
@@ -81,4 +82,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return jsonify({"message": "logged out"}), 200
+    if request.is_json:
+        return jsonify({"message": "logged out"}), 200
+    flash("You have been logged out.", "info")
+    return redirect(url_for("main_bp.get_recipes"))
