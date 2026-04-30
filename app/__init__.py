@@ -12,6 +12,6 @@ def create_app() -> Flask:
     migrate.init_app(app, db)
 
     from .routes import main
-    app.register_blueprint(main)
+    app.register_blueprint(main) # all routes to one blueprint - instead of @app, do @blueprint
 
     return app
