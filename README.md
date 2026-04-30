@@ -9,6 +9,7 @@ RecipeShare is a Flask starter app that supports both browser pages and JSON API
 - Flask-Migrate
 - Flask-Login
 - Flask-WTF / WTForms
+- python-dotenv
 - PostgreSQL (default)
 - pytest
 
