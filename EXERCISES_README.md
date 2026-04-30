@@ -3,6 +3,8 @@
 Work through these three exercises in order. Each one builds directly on the
 code already in the project. Starter code is provided in `exercises/`.
 
+> Note: all `main_bp` routes are mounted under `/api` in this project.
+
 ---
 
 ## Exercise 1 — Recipe Detail Page
@@ -12,7 +14,7 @@ so that a browser request renders an HTML page for a single recipe.
 
 ### What to do
 
-1. Create the template `app/templates/recipe_detail.html` (starter file provided).
+1. Create the template `app/templates/recipe_detail.html` by copying the starter file from `exercises/recipe_detail.html`.
 2. Update `get_recipe` in `app/routes.py`:
    - If `request.is_json` → keep returning `jsonify(recipe.to_dict())` *(already there, don't break it)*
    - Otherwise → `return render_template("recipe_detail.html", recipe=recipe)`
@@ -25,14 +27,15 @@ so that a browser request renders an HTML page for a single recipe.
 
 ### What you should see
 
-- `GET /recipes` → clicking a recipe card takes you to `/recipes/1`
-- `/recipes/1` shows the full title, description, instructions, and prep time
-- `GET /recipes/1` with `Content-Type: application/json` still returns JSON
+- `GET /api/recipes` -> clicking a recipe card takes you to `/api/recipes/1`
+- `/api/recipes/1` shows the full title, description, instructions, and prep time
+- `GET /api/recipes/1` still returns JSON when the request includes
+  `Content-Type: application/json` (so `request.is_json` is `True`)
 
 ### Files to edit
 - `app/routes.py`
 - `app/templates/home.html`
-- `app/templates/recipe_detail.html` *(create from starter)*
+- `app/templates/recipe_detail.html` *(create from `exercises/recipe_detail.html`)*
 
 ---
 

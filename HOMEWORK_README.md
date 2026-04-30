@@ -4,6 +4,8 @@ These two features extend the in-class work. Both involve patterns you have
 already seen — form classes, dual-mode routes, `@login_required`, and
 `current_user` — applied to new problems.
 
+> Note: all `main_bp` routes are mounted under `/api` in this project.
+
 Submit a link to your GitHub branch before the next class.
 
 ---
@@ -14,7 +16,7 @@ Submit a link to your GitHub branch before the next class.
 
 When an unauthenticated user tries to visit a protected route (e.g. a future
 "create recipe" page), Flask-Login redirects them to the login page and
-appends `?next=/recipes/new` to the URL. After a successful login the user
+appends `?next=/api/recipes/new` to the URL. After a successful login the user
 should land on the page they originally wanted, not always the recipe list.
 
 ### Requirements
@@ -22,7 +24,7 @@ should land on the page they originally wanted, not always the recipe list.
 1. After a successful **form** login, read `request.args.get("next")`.
 2. If a `next` value exists **and** is a safe relative URL, redirect there.
 3. Otherwise fall back to `url_for("main_bp.get_recipes")`.
-4. The JSON login path must remain unchanged.
+4. The JSON login path (when `request.is_json` is `True`) must remain unchanged.
 
 ### Safety rule
 
@@ -42,9 +44,9 @@ def is_safe_url(target: str) -> bool:
 
 | Scenario | Expected behaviour |
 |---|---|
-| Visit `/recipes` (no `next`) → login | Redirect to `/recipes` |
-| Visit a protected URL → redirected to `/login?next=/recipes/new` → login | Redirect to `/recipes/new` |
-| `?next=https://evil.com` | Ignored — redirect to `/recipes` |
+| Visit `/api/recipes` (no `next`) → login | Redirect to `/api/recipes` |
+| Visit a protected URL → redirected to `/auth/login?next=/api/recipes/new` → login | Redirect to `/api/recipes/new` |
+| `?next=https://evil.com` | Ignored — redirect to `/api/recipes` |
 | JSON `POST /auth/login` | Unchanged — returns `user.to_dict()` |
 
 ### Files to edit
@@ -61,8 +63,8 @@ to make your changes. Copy the relevant pieces into `app/auth/views.py`.
 
 ### Background
 
-The `POST /recipes` endpoint already creates recipes for API clients. Add a
-browser form at `GET /recipes/new` so a logged-in user can submit a new
+The `POST /api/recipes` endpoint already creates recipes for API clients. Add a
+browser form at `GET /api/recipes/new` so a logged-in user can submit a new
 recipe through the web UI.
 
 ### Requirements
@@ -78,7 +80,7 @@ recipe through the web UI.
    | `prep_time` | `IntegerField` | `DataRequired()`, `NumberRange(min=1)` |
    | `submit` | `SubmitField` | — |
 
-2. **Route** — add `GET /recipes/new` and `POST /recipes/new`:
+2. **Route** — add `GET /api/recipes/new` and `POST /api/recipes/new`:
    - `GET` → render the blank form (login required)
    - `POST` → validate, create the `Recipe`, commit, flash success, redirect
      to the new recipe's detail page
@@ -100,10 +102,10 @@ recipe through the web UI.
 
 | Scenario | Expected behaviour |
 |---|---|
-| Unauthenticated `GET /recipes/new` | Redirect to login |
+| Unauthenticated `GET /api/recipes/new` | Redirect to login |
 | Valid form submission | Recipe saved, redirect to detail page, flash "Recipe created!" |
 | Missing required field | Form re-rendered with validation errors shown |
-| `POST /recipes` with JSON (existing API) | Unchanged — returns 201 JSON |
+| `POST /api/recipes` with JSON (`request.is_json` is `True`) | Unchanged — returns 201 JSON |
 
 ### Files to create / edit
 - `app/routes.py` — add `RecipeForm` and two new route functions
