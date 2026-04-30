@@ -25,7 +25,7 @@ RecipeShare is a Flask starter app that supports both browser pages and JSON API
 
 - `GET /api/` - API health/message JSON
 - `GET /api/recipes` - HTML by default, JSON when `request.is_json` is `True`
-- `GET /api/recipes/<id>` - HTML by default, JSON when `request.is_json` is `True`
+- `GET /api/recipes/<id>` - JSON recipe detail (HTML rendering is added in Exercise 1)
 - `POST /api/recipes` - create recipe (login required)
 - `PATCH /api/recipes/<id>` - update recipe (owner only)
 - `DELETE /api/recipes/<id>` - delete recipe (owner only)
