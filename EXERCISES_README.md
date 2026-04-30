@@ -29,7 +29,8 @@ so that a browser request renders an HTML page for a single recipe.
 
 - `GET /api/recipes` -> clicking a recipe card takes you to `/api/recipes/1`
 - `/api/recipes/1` shows the full title, description, instructions, and prep time
-- `GET /api/recipes/1` still returns JSON when `request.is_json` is `True`
+- `GET /api/recipes/1` still returns JSON when the request includes
+  `Content-Type: application/json` (so `request.is_json` is `True`)
 
 ### Files to edit
 - `app/routes.py`
