@@ -24,6 +24,12 @@
     {% else %}
     <p class="empty-state">No recipes yet — be the first to add one!</p>
     {% endif %}
+
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('main_bp.new_recipe') }}" class="btn btn-primary">
+        ＋ Add Recipe
+    </a>
+    {% endif %}
 </section>
 
 <style>

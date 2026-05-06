@@ -1,10 +1,33 @@
 from flask import Blueprint, jsonify, request, render_template
 from flask_login import login_required, current_user
-
+#from forms import RecipeForm
 from .extensions import db
 from .models import Recipe
+from flask import render_template, flash, redirect, url_for  # already partly imported
+from flask_wtf import FlaskForm
+from wtforms import StringField, TextAreaField, IntegerField, SubmitField
+from wtforms.validators import DataRequired, Length, NumberRange
 
 main_bp = Blueprint("main_bp", __name__)
+
+class RecipeForm(FlaskForm):
+    title = StringField(
+        "Title",
+        validators=[DataRequired(), Length(max=150)]
+    )
+    description = TextAreaField(
+        "Description",
+        validators=[DataRequired()]
+    )
+    instructions = TextAreaField(
+        "Instructions",
+        validators=[DataRequired()]
+    )
+    prep_time = IntegerField(
+        "Prep Time (minutes)",
+        validators=[DataRequired(), NumberRange(min=1)]
+    )
+    submit = SubmitField("Save Recipe")
 
 
 @main_bp.route("/")
@@ -31,7 +54,10 @@ def get_recipe(recipe_id: int):
 @main_bp.route("/recipes", methods=["POST"])
 @login_required
 def create_recipe():
-    data = request.get_json() or {}
+    if request.is_json:
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict()
 
     required_fields = ["title", "description", "instructions", "prep_time"]
     missing = [field for field in required_fields if field not in data]
@@ -39,17 +65,46 @@ def create_recipe():
         return {"error": f"Missing required fields: {', '.join(missing)}"}, 400
 
     recipe = Recipe(
-        title=data["title"],
-        description=data["description"],
-        instructions=data["instructions"],
-        prep_time=data["prep_time"],
-        author=current_user,
-    )
+            title=data["title"],
+            description=data["description"],
+            instructions=data["instructions"],
+            prep_time=data["prep_time"],
+            author=current_user,
+        )
 
     db.session.add(recipe)
     db.session.commit()
+    if request.is_json:
+        return jsonify(recipe.to_dict()), 201
+    else:
+        flash("Recipe created!", "success")
+        return redirect(url_for("main_bp.get_recipe", recipe_id=recipe.id))
 
-    return jsonify(recipe.to_dict()), 201
+
+
+# ── New route ──────────────────────────────────────────────────────────────────
+@main_bp.route("/recipes/new", methods=["GET", "POST"])
+@login_required
+def new_recipe():
+    form = RecipeForm()
+
+    if form.validate_on_submit():
+        # TODO: create a Recipe from form data and save it
+        recipe = Recipe(
+                    title=form.title.data,
+                    description=form.description.data,
+                    instructions=form.instructions.data,
+                    prep_time=form.prep_time.data,
+                    author=current_user,)
+        db.session.add(recipe)
+        db.session.commit()
+        flash("Recipe created!", "success")
+        return redirect(url_for("main_bp.get_recipe", recipe_id=recipe.id))
+
+
+    # TODO: render the recipe_form.html template, passing the form
+    return render_template("recipe_form.html", form=form)
+
 
 
 @main_bp.route("/recipes/<int:recipe_id>", methods=["PATCH"])
@@ -78,4 +133,6 @@ def delete_recipe(recipe_id: int):
     db.session.delete(recipe)
     db.session.commit()
     return "", 204
+
+
 
