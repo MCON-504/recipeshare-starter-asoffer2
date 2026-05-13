@@ -863,9 +863,10 @@ WTForms==3.2.1
       <div class="section-header"><span class="section-num">10</span><h2>Testing the Form Flow</h2></div>
       <p>
         We can test forms with Flask's test client. In many tests, CSRF is disabled so the test can focus on our application behavior. We are not testing Flask-WTF itself. We are testing that our route, validation rules, model creation, and redirects work together.
+        add two tests below to your test_main_routes.py file to confirm that the feedback form shows validation errors and accepts valid submissions.
       </p>
       <div class="code-block">
-        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">tests/test_recipe_form.py</div><div class="code-lang">python</div></div>
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">tests/test_main_routes.py</div><div class="code-lang">python</div></div>
         <pre><code><span class="kw">def</span> <span class="fn">test_feedback_form_shows_validation_errors</span>(client):
     response = client.post(<span class="st">"/feedback"</span>, data={
         <span class="st">"name"</span>: <span class="st">""</span>,
@@ -935,7 +936,7 @@ WTForms==3.2.1
     favorite_cuisine = db.Column(db.String(80))
     years_cooking = db.Column(db.Integer)
 
-    user_id = db.Column(db.Integer, db.ForeignKey(<span class="st">"user.id"</span>), nullable=<span class="kw">False</span>, unique=<span class="kw">True</span>)
+    user_id = db.Column(db.Integer, db.ForeignKey(<span class="st">"users.id"</span>), nullable=<span class="kw">False</span>, unique=<span class="kw">True</span>)
     user = db.relationship(<span class="st">"User"</span>, backref=db.backref(<span class="st">"profile"</span>, uselist=<span class="kw">False</span>))</code></pre>
       </div>
       <h3>Template skeleton to use</h3>
