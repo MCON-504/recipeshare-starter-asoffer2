@@ -62,7 +62,7 @@ def register():
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     # ── JSON / API path ──────────────────────────────────────────────────────
-    if request.is_json:
+    if request.is_json: # if its a get, nothing will be submitted, it will go here
         data     = request.get_json() or {}
         username = data.get("username", "")
         password = data.get("password", "")

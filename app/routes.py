@@ -7,6 +7,7 @@ from flask import render_template, flash, redirect, url_for  # already partly im
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, IntegerField, SubmitField
 from wtforms.validators import DataRequired, Length, NumberRange
+from .forms import FeedbackForm
 
 main_bp = Blueprint("main_bp", __name__)
 
@@ -134,5 +135,14 @@ def delete_recipe(recipe_id: int):
     db.session.commit()
     return "", 204
 
+@main_bp.route("/feedback", methods=["GET", "POST"])
+def feedback():
+    form = FeedbackForm()
+
+    if form.validate_on_submit():
+        flash(f"Thanks, {form.name.data}! We received your feedback.", "success")
+        return redirect(url_for("main_bp.feedback"))
+
+    return render_template("feedback.html", form=form)
 
 

@@ -12,7 +12,7 @@
 from flask import render_template, flash, redirect, url_for  # already partly imported
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, IntegerField, SubmitField
-from wtforms.validators import DataRequired, Length, NumberRange
+from wtforms.validators import DataRequired, Length, NumberRange, Email
 from flask import Blueprint, jsonify, request, render_template
 from flask_login import login_required, current_user
 
@@ -42,20 +42,20 @@ class RecipeForm(FlaskForm):
 
 
 # ── New route ──────────────────────────────────────────────────────────────────
-@main_bp.route("/recipes/new", methods=["GET", "POST"])
+''''@main_bp.route("/recipes/new", methods=["GET", "POST"])
 @login_required
 def new_recipe():
     form = RecipeForm()
 
     if form.validate_on_submit():
         # TODO: create a Recipe from form data and save it
-        #   recipe = Recipe(
-        #       title=...,
-        #       description=...,
-        #       instructions=...,
-        #       prep_time=...,
-        #       author=current_user,
-        #   )
+        recipe = Recipe(
+              title=...,
+              description=...,
+              instructions=...,
+              prep_time=...,
+              author=current_user,
+              )
         #   db.session.add(recipe)
         #   db.session.commit()
         #   flash("Recipe created!", "success")
@@ -63,4 +63,23 @@ def new_recipe():
         pass
 
     # TODO: render the recipe_form.html template, passing the form
-    pass
+    pass'''
+
+class FeedbackForm(FlaskForm):
+    name = StringField(
+        "Name",
+        validators=[DataRequired(), Length(min=2, max=80)]
+    )
+    email = StringField(
+        "Email",
+        validators=[DataRequired(), Email(), Length(max=120)]
+    )
+    topic = StringField(
+        "Topic",
+        validators=[DataRequired(), Length(max=100)]
+    )
+    message = TextAreaField(
+        "Message",
+        validators=[DataRequired(), Length(min=10, max=500)]
+    )
+    submit = SubmitField("Send Feedback")
