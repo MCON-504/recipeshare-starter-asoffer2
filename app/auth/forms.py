@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange
 
 from app.models import User
 
@@ -59,3 +59,19 @@ class FeedbackForm(FlaskForm):
         validators=[DataRequired(), Length(min=10, max=500)]
     )
     submit = SubmitField("Send Feedback")
+
+class ProfileForm(FlaskForm):
+    display_name = StringField(
+        "Name", validators=[DataRequired(),Length(min=2, max=80)]
+    )
+
+    bio = TextAreaField(
+        "bio", validators=[Length(max=300)]
+    )
+
+    favorite_cuisine = StringField("Favorite Cuisine", validators=[Length(max=800)])
+
+    years_cooking = IntegerField("Years Cooking", validators=[NumberRange(min=0, max=100)])
+    submit = SubmitField("Save Profile")
+
+

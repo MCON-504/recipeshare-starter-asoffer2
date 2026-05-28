@@ -41,29 +41,6 @@ class RecipeForm(FlaskForm):
     submit = SubmitField("Save Recipe")
 
 
-# ── New route ──────────────────────────────────────────────────────────────────
-''''@main_bp.route("/recipes/new", methods=["GET", "POST"])
-@login_required
-def new_recipe():
-    form = RecipeForm()
-
-    if form.validate_on_submit():
-        # TODO: create a Recipe from form data and save it
-        recipe = Recipe(
-              title=...,
-              description=...,
-              instructions=...,
-              prep_time=...,
-              author=current_user,
-              )
-        #   db.session.add(recipe)
-        #   db.session.commit()
-        #   flash("Recipe created!", "success")
-        #   return redirect(url_for("main_bp.get_recipe", recipe_id=recipe.id))
-        pass
-
-    # TODO: render the recipe_form.html template, passing the form
-    pass'''
 
 class FeedbackForm(FlaskForm):
     name = StringField(
@@ -83,3 +60,18 @@ class FeedbackForm(FlaskForm):
         validators=[DataRequired(), Length(min=10, max=500)]
     )
     submit = SubmitField("Send Feedback")
+
+class ProfileForm(FlaskForm):
+    display_name = StringField(
+            "Name", validators=[DataRequired(),Length(min=2, max=80)]
+        )
+
+    bio = TextAreaField(
+        "bio", validators=[Length(max=300)]
+    )
+
+    favorite_cuisine = StringField("Favorite Cuisine", validators=[Length(max=800)])
+
+    years_cooking = IntegerField("Years Cooking", validators=[NumberRange(min=0, max=100)])
+    submit = SubmitField("Save Profile")
+

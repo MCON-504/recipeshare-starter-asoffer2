@@ -2,54 +2,36 @@ from flask import Blueprint, jsonify, request, render_template
 from flask_login import login_required, current_user
 #from forms import RecipeForm
 from .extensions import db
-from .models import Recipe
+from .models import Recipe,Profile
 from flask import render_template, flash, redirect, url_for  # already partly imported
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, IntegerField, SubmitField
 from wtforms.validators import DataRequired, Length, NumberRange
-from .forms import FeedbackForm
+from .forms import FeedbackForm, ProfileForm, RecipeForm
 
 main_bp = Blueprint("main_bp", __name__)
-
-class RecipeForm(FlaskForm):
-    title = StringField(
-        "Title",
-        validators=[DataRequired(), Length(max=150)]
-    )
-    description = TextAreaField(
-        "Description",
-        validators=[DataRequired()]
-    )
-    instructions = TextAreaField(
-        "Instructions",
-        validators=[DataRequired()]
-    )
-    prep_time = IntegerField(
-        "Prep Time (minutes)",
-        validators=[DataRequired(), NumberRange(min=1)]
-    )
-    submit = SubmitField("Save Recipe")
-
 
 @main_bp.route("/")
 def api_home():
     return jsonify({"message": "RecipeShare API is running"})
 
-
+@main_bp.route("/api/recipes", methods=["GET"])
 @main_bp.route("/recipes", methods=["GET"])
 def get_recipes():
     recipes = Recipe.query.order_by(Recipe.created_at.desc()).all()
-    if request.is_json:
-        return jsonify([recipe.to_dict() for recipe in recipes])
+    if request.path.startswith("/api"):
+        return jsonify([recipe.to_dict() for recipe in recipes]) or []
     return render_template("home.html", recipes=recipes)
 
-
+@main_bp.route("/api/recipes", methods=["GET"])
 @main_bp.route("/recipes/<int:recipe_id>", methods=["GET"])
 def get_recipe(recipe_id: int):
     recipe = Recipe.query.get_or_404(recipe_id)
-    if request.is_json:
+    if request.path.startswith("/api/"):
         return jsonify(recipe.to_dict())
     return render_template("recipe_detail.html", recipe=recipe)
+
+
 
 
 @main_bp.route("/recipes", methods=["POST"])
@@ -143,6 +125,29 @@ def feedback():
         flash(f"Thanks, {form.name.data}! We received your feedback.", "success")
         return redirect(url_for("main_bp.feedback"))
 
+
     return render_template("feedback.html", form=form)
+
+@main_bp.route("/profile", methods = ["GET", "POST"])
+@login_required
+def profile():
+    profile = current_user.profile
+    form = ProfileForm(obj=profile)
+
+    if form.validate_on_submit():
+        if profile is None:
+            profile = Profile(user=current_user)
+            db.session.add(profile)
+
+        profile.display_name = form.display_name.data.strip()
+        profile.bio = (form.bio.data or "").strip() or None
+        profile.favorite_cuisine = (form.favorite_cuisine.data or "").strip() or None
+        profile.years_cooking = form.years_cooking.data
+
+        db.session.commit()
+        flash("Profile saved successfully", "success")
+        return redirect(url_for("main_bp.profile"))
+
+    return render_template("profile_form.html", form=form)
 
 

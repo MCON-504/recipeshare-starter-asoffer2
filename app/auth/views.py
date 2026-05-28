@@ -16,6 +16,8 @@ def is_safe_url(target: str) -> bool:
     """
     # TODO: implement using urlparse
     #   hint: a safe URL has no netloc and its path starts with "/"
+    if isinstance(target, bytes):
+        target = target.decode()
     parsed = urlparse(target)
     return not parsed.netloc and parsed.path.startswith("/")
 
@@ -87,12 +89,14 @@ def login():
         flash(f"Welcome back, {user.username}! You are now logged in.", "success")
 
         # TODO: read the `next` query parameter
-        next_url = request.args.get("next")
+        next_url = request.args.get("next", "")
+        print(next_url)
 
         # TODO: redirect to next_url if it is safe, otherwise get_recipes
         if is_safe_url(next_url):
             return redirect(next_url)
         return redirect(url_for("main_bp.get_recipes"))
+
 
     return render_template("auth/login.html", form=form)
 
@@ -104,4 +108,4 @@ def logout():
     if request.is_json:
         return jsonify({"message": "logged out"}), 200
     flash("You have been logged out.", "info")
-    return redirect(url_for("main_bp.get_recipes"))
+    return redirect(url_for("main_bp.get_recipes")), 200
