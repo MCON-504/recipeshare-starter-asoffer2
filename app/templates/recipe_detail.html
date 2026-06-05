@@ -32,6 +32,46 @@
         {{recipe.instructions}}
     </div>
 
+    <section class="reviews-section">
+
+        <h2>Reviews</h2>
+
+        {% if reviews %}
+
+        {% for review in reviews %}
+        <div class="review-card">
+
+            <div class="review-header">
+                <div class="review-rating">
+                    ⭐ {{ review.rating }}/5
+                </div>
+
+                <div class="review-meta">
+                    {% if review.author %}
+                    By {{ review.author.username }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <p class="review-comment">
+                {{ review.comment }}
+            </p>
+
+        </div>
+        {% endfor %}
+
+        {% else %}
+
+        <p class="no-reviews">
+            No reviews yet. Be the first to leave one!
+        </p>
+
+        {% endif %}
+
+    </section>
+
+    <a href = "{{url_for('main_bp.review', recipe_id = recipe.id)}}" class="btn btn-primary">Write a review</a>
+
     <a href="{{ url_for('main_bp.get_recipes') }}" class="btn btn-back">
         ← Back to recipes
     </a>

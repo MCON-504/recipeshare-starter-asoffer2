@@ -74,4 +74,15 @@ class ProfileForm(FlaskForm):
     years_cooking = IntegerField("Years Cooking", validators=[NumberRange(min=0, max=100)])
     submit = SubmitField("Save Profile")
 
+class RecipeReviewForm(FlaskForm):
+    rating = IntegerField(
+        "Rating", validators=[DataRequired(),NumberRange(min=1, max=5)]
+    )
+
+    comment = TextAreaField(
+        "Comment", validators=[DataRequired(), Length(min=5, max=300)]
+    )
+
+    submit = SubmitField("Save Review")
+
 

@@ -2,12 +2,12 @@ from flask import Blueprint, jsonify, request, render_template
 from flask_login import login_required, current_user
 #from forms import RecipeForm
 from .extensions import db
-from .models import Recipe,Profile
+from .models import Recipe,Profile, RecipeReview
 from flask import render_template, flash, redirect, url_for  # already partly imported
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, IntegerField, SubmitField
 from wtforms.validators import DataRequired, Length, NumberRange
-from .forms import FeedbackForm, ProfileForm, RecipeForm
+from .forms import FeedbackForm, ProfileForm, RecipeForm, RecipeReviewForm
 
 main_bp = Blueprint("main_bp", __name__)
 
@@ -15,21 +15,21 @@ main_bp = Blueprint("main_bp", __name__)
 def api_home():
     return jsonify({"message": "RecipeShare API is running"})
 
-@main_bp.route("/api/recipes", methods=["GET"])
+
 @main_bp.route("/recipes", methods=["GET"])
 def get_recipes():
     recipes = Recipe.query.order_by(Recipe.created_at.desc()).all()
-    if request.path.startswith("/api"):
-        return jsonify([recipe.to_dict() for recipe in recipes]) or []
+    if request.is_json :
+        return jsonify([recipe.to_dict() for recipe in recipes])
     return render_template("home.html", recipes=recipes)
 
-@main_bp.route("/api/recipes", methods=["GET"])
 @main_bp.route("/recipes/<int:recipe_id>", methods=["GET"])
 def get_recipe(recipe_id: int):
     recipe = Recipe.query.get_or_404(recipe_id)
-    if request.path.startswith("/api/"):
+    reviews = RecipeReview.query.filter_by(recipe_id = recipe_id)
+    if request.is_json :
         return jsonify(recipe.to_dict())
-    return render_template("recipe_detail.html", recipe=recipe)
+    return render_template("recipe_detail.html", recipe=recipe, reviews=reviews)
 
 
 
@@ -150,4 +150,24 @@ def profile():
 
     return render_template("profile_form.html", form=form)
 
+@main_bp.route("/recipes/<recipe_id>/review", methods = ["GET", "POST"])
+@login_required
+def review(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    form = RecipeReviewForm()
 
+    if form.validate_on_submit():
+        reviews = RecipeReview()
+
+
+        reviews.rating = form.rating.data
+        reviews.comment = (form.comment.data or "").strip() or None
+        reviews.recipe_id = recipe.id
+        reviews.user_id = current_user.id
+        db.session.add(reviews)
+
+        db.session.commit()
+        flash("Thanks for your feedback!", "success")
+        return redirect(url_for("main_bp.get_recipe", recipe_id=recipe_id))
+
+    return render_template("review_form.html", form=form, recipe=recipe)
